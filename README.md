@@ -3,7 +3,7 @@ Auto Generate MenuItems For UIMenuController . 动态生成 menuController 的 I
 
 为什么写这个 Demo 呢 ...
 
-因为 , 媳妇儿的的公司 , 有个很奇怪的需求 , 要 `UIMenuController` 动态生成 MenuItem ... WTF ?
+因为 , 媳妇儿的的公司 , 有个很奇怪的需求 , 要 `UIMenuController` 动态生成 MenuItem ... , 还要回调点击的 title 值给 RN , WTF ?
 
 没有办法 , 秉着不为媳妇儿写代码 , 就要被打死的情况下 ... 我写 = =
 
