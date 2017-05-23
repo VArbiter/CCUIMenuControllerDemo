@@ -26,10 +26,19 @@
 
 - (void) ccTapGRAction : (UITapGestureRecognizer *) sender {
     __block RCTMenuView *menuView = [[RCTMenuView alloc] init];
+    
+#warning TODO >>> TEST
+    menuView.arrayTitleItems = @[@{@"copyy" : @"复制"},
+                                 @{@"relay" : @"转发"},
+                                 @{@"collect" : @"收藏"},
+                                 @{@"deletee" : @"删除"},
+                                 @{@"translation" : @"翻译"},
+                                 @{@"moree" : @"更多..."}];
+    
     [self.view addSubview:menuView];
     
-    [menuView ccClickAction:^(NSMutableDictionary *dictionaryValue, NSString *stringKey, NSString *stringValue) {
-        NSLog(@"\n%@ - %@ - %@" , stringKey , stringValue , dictionaryValue);
+    [menuView ccClickAction:^(NSMutableDictionary *dictionaryValue, NSString *stringKey, NSString *stringValue, NSInteger integerIndex) {
+        NSLog(@"\n%@ - %@ - %ld - %@" , stringKey , stringValue , integerIndex , dictionaryValue);
     } withCloseAction:^{
         menuView = nil; // Destory
     }];

@@ -23,7 +23,8 @@
 @property (nonatomic , strong) NSMutableArray *arrayMenuItem ;
 @property (nonatomic , copy) void(^blockClickAction)(NSMutableDictionary *dictionaryValue ,
                                                         NSString *stringKey ,
-                                                        NSString *stringValue) ;
+                                                        NSString *stringValue ,
+                                                        NSInteger integerIndex) ;
 @property (nonatomic , copy) dispatch_block_t blockCloseAction ;
 
 @end
@@ -43,36 +44,42 @@
 
 #pragma mark - PUBLIC
 - (void)ccShowMenu : (CGRect) rectFrame {
-    self.class.arrayKeys = self.dictionaryTitleItem.allKeys;
+    if (self.menuController.isMenuVisible || !self.arrayTitleItems.count) return ;
     
-    if (self.menuController.isMenuVisible) return ;
+    NSMutableArray *arrayAllkeys = [NSMutableArray array];
+    [self.arrayTitleItems enumerateObjectsUsingBlock:^(NSDictionary * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if ([obj isKindOfClass:[NSDictionary class]]) {
+            [arrayAllkeys addObject:obj.allKeys.firstObject];
+        }
+    }];
+    self.class.arrayKeys = arrayAllkeys;
     
     [self.arrayMenuItem removeAllObjects];
-    __block NSInteger integerIndex = 0;
     
     __weak typeof(self) pSelf = self;
-    [self.dictionaryTitleItem enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+    [self.arrayTitleItems enumerateObjectsUsingBlock:^(NSDictionary * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSString *stringKey = obj.allKeys.firstObject;
+        NSString *stringValue = obj.allValues.firstObject;
+        
         void (^blockAddMethod)(UIMenuItem *menuItem , SEL selector) = ^(UIMenuItem *menuItem , SEL selector) {
-            [menuItem setTitle:obj];
+            [menuItem setTitle:stringValue];
             [menuItem setAction:selector];
-            menuItem.integerCurrentIndex = integerIndex ++ ;
-            menuItem.dictionary = [NSMutableDictionary dictionaryWithObject:obj
-                                                                     forKey:key];
+            menuItem.integerCurrentIndex = idx ;
+            menuItem.dictionary = [NSMutableDictionary dictionaryWithObject:stringValue
+                                                                     forKey:stringKey];
             [pSelf.arrayMenuItem addObject:menuItem];
         };
         
-        if ([key isKindOfClass:[NSString class]] && [obj isKindOfClass:[NSString class]]) {
+        if ([stringKey isKindOfClass:[NSString class]] && [stringValue isKindOfClass:[NSString class]]) {
             UIMenuItem *menuItem = [[UIMenuItem alloc] init];
-            SEL selector = NSSelectorFromString(key);
+            SEL selector = NSSelectorFromString(stringKey);
             if (blockAddMethod) {
                 if ([pSelf.class resolveInstanceMethod:selector]) {
-                    if ([pSelf respondsToSelector:selector]) {
+                    if ([pSelf respondsToSelector:selector])
                         blockAddMethod(menuItem , selector);
-                    }
                 }
-                else if ([pSelf respondsToSelector:selector]) {
+                else if ([pSelf respondsToSelector:selector])
                     blockAddMethod(menuItem , selector);
-                }
             }
         }
     }];
@@ -86,7 +93,8 @@
 }
 - (void) ccClickAction : (void(^)(NSMutableDictionary *dictionaryValue ,
                                   NSString *stringKey ,
-                                  NSString *stringValue)) blockClick
+                                  NSString *stringValue ,
+                                  NSInteger integerIndex)) blockClick
        withCloseAction : (dispatch_block_t) blockClose  {
     self.blockClickAction = [blockClick copy];
     self.blockCloseAction = [blockClose copy];
@@ -125,7 +133,8 @@
         if (pSelf.blockClickAction)
             pSelf.blockClickAction(menuItem.dictionary ,
                                    menuItem.dictionary.allKeys.firstObject,
-                                   menuItem.dictionary.allValues.firstObject);
+                                   menuItem.dictionary.allValues.firstObject,
+                                   integerIndex);
     };
 }
 
@@ -134,7 +143,7 @@
     return YES;
 }
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender {
-    for (NSString *tempKey in self.dictionaryTitleItem.allKeys) {
+    for (NSString *tempKey in self.class.arrayKeys) {
         if ([NSStringFromSelector(action) containsString:tempKey]) {
             return YES;
         }
@@ -161,16 +170,6 @@
     [defaultCenter removeObserver:UIMenuControllerDidHideMenuNotification];
     
     NSLog(@"_CC_DEALLOC_");
-}
-
-#warning TODO >>> TEST / Need Delete / Get data from outside
-- (NSDictionary *)dictionaryTitleItem {
-    if (_dictionaryTitleItem) return _dictionaryTitleItem;
-    _dictionaryTitleItem = @{@"copyy" : @"复制" ,
-                             @"deletee" : @"删除" ,
-                             @"translatee" : @"翻译" ,
-                             @"moree" : @"更多"};
-    return _dictionaryTitleItem;
 }
 
 @end
